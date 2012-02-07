@@ -72,6 +72,31 @@ describe Delayed::Worker do
         end
       end
 
+      context "while running with a queue" do
+        before(:each) do
+          @worker.queue = 'super'
+        end
+
+        after(:each) do
+          @worker.queue = nil
+        end
+
+        it "should run jobs belonging to queue" do
+          job_create(:queue => 'super')
+          lambda { @worker.work_off }.should change { SimpleJob.runs }.from(0).to(1)
+        end
+
+        it "should run jobs belonging with no queue set" do
+          job_create
+          lambda { @worker.work_off }.should change { SimpleJob.runs }.from(0).to(1)
+        end
+
+        it "should not run jobs belonging to other queues" do
+          job_create(:queue => 'other')
+          lambda { @worker.work_off }.should_not change { SimpleJob.runs }
+        end
+      end
+
       context "while running with locked and expired jobs" do
         before(:each) do
           @worker.name = 'worker1'

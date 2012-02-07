@@ -50,6 +50,9 @@ module Delayed
         opts.on('-p', '--prefix NAME', "String to be prefixed to worker process names") do |prefix|
           @options[:prefix] = prefix
         end
+        opts.on('-q', '--queue NAME', "Queue name") do |queue|
+          @options[:queue] = queue
+        end
       end
       @args = opts.parse!(args)
     end

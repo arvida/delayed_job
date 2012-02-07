@@ -32,6 +32,7 @@ module Delayed
         key :locked_by,   String, :index => true
         key :failed_at,   Time
         key :last_error,  String
+        key :queue,       String
         timestamps!
         
         before_save :set_default_run_at
@@ -57,11 +58,13 @@ module Delayed
             :run_at => {"$lte" => right_now},
             :limit => -limit, # In mongo, positive limits are 'soft' and negative are 'hard'
             :failed_at => nil,
-            :sort => [['priority', 1], ['run_at', 1]]
+            :sort => [['priority', 1], ['run_at', 1]],
+            :queue => {"$in" => [Worker.queue, nil]}
           }
 
+
           where = "this.locked_at == null || this.locked_at < #{make_date(right_now - max_run_time)}"
-          
+
           (conditions[:priority] ||= {})['$gte'] = Worker.min_priority.to_i if Worker.min_priority
           (conditions[:priority] ||= {})['$lte'] = Worker.max_priority.to_i if Worker.max_priority
 

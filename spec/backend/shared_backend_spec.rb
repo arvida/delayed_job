@@ -40,8 +40,13 @@ shared_examples_for 'a backend' do
 
   it "should be able to set run_at when enqueuing items" do
     later = @backend.db_time_now + 5.minutes
-    @job = @backend.enqueue SimpleJob.new, 5, later
+    @job = @backend.enqueue SimpleJob.new, 5, :run_at => later
     @job.run_at.should be_close(later, 1)
+  end
+
+  it "should be able to set queue when enqueuing items" do
+    @job = @backend.enqueue SimpleJob.new, 5, :queue => 'my-queue'
+    @job.queue.should == 'my-queue'
   end
 
   it "should work with jobs in modules" do
